@@ -36,6 +36,22 @@ public class GreetingController {
     private GridFsTemplate gridFsTemplate;
 
 
+    @RequestMapping("/photo3")
+    public ResponseEntity<byte[]> testphotoConLatLon(@RequestParam("lat") String lat,
+                                                     @RequestParam("long") String lon) throws IOException {
+
+//        metaData.put("coordinates-lat", lat);
+//        metaData.put("coordinates-long", lon);
+        List<GridFSDBFile> files = gridFsTemplate.find(Query.query(Criteria.where("metadata.coordinates-lat").is(lat).and("coordinates-long").is(lon)));
+
+
+        final HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_JPEG);
+
+        return new ResponseEntity<byte[]>(IOUtils.toByteArray(files.get(files.size() - 1).getInputStream()), headers, HttpStatus.OK);
+    }
+
+
     @RequestMapping("/photo2")
     public ResponseEntity<byte[]> testphoto() throws IOException {
 
@@ -50,15 +66,17 @@ public class GreetingController {
 
 
     @RequestMapping(method = RequestMethod.POST, value = "/uploadImage")
-    public String handleFileUploads(
-            @RequestParam("key ") MultipartFile file) {
+    public String handleFileUploads(@RequestParam("lat") String lat,
+                                    @RequestParam("long") String lon,
+                                    @RequestParam("key") MultipartFile file) {
 
 
         if (!file.isEmpty()) {
             try {
 
                 DBObject metaData = new BasicDBObject();
-                metaData.put("coordinates-id", 99);
+                metaData.put("coordinates-lat", lat);
+                metaData.put("coordinates-long", lon);
 
 
                 gridFsTemplate.store(file.getInputStream(), "image/jpeg", metaData);
