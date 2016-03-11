@@ -30,7 +30,7 @@ import java.util.concurrent.atomic.AtomicLong;
 @RequestMapping(value = "/odra")
 public class FullFunctionsController {
 
-    public static final String TOKEN = "TLf3%2$kYteyG-@6UGfUy!2";
+    public static final String TOKEN = "123456789";
 
     @Autowired
     private GreetingController greetingController;
@@ -49,17 +49,24 @@ public class FullFunctionsController {
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/login")
-    public ResponseEntity<String> login(@RequestBody User user){
+    public ResponseEntity<String> login(@RequestBody User user) {
         System.out.println(user);
-        if(user.getEmail().equals(user.getPassword()) ){
+        if (user.getEmail().equals(user.getPassword())) {
             return new ResponseEntity<String>(TOKEN, HttpStatus.OK);
         }
-        throw  new IllegalArgumentException("Invalid credentials");
+        throw new IllegalArgumentException("Invalid credentials");
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/signup")
-    public ResponseEntity<String> signup(User user){
+    public ResponseEntity<String> signup(@RequestBody User user) {
         System.out.println(user);
+        if (user.getEmail().startsWith("1")) {
+            throw new IllegalArgumentException("Correo no valido");
+        } else if (user.getPassword().startsWith("1")) {
+            throw new IllegalArgumentException("Pwd no valido");
+        } else if (user.getName().startsWith("1")) {
+            throw new IllegalArgumentException("Invalid name");
+        }
         return new ResponseEntity<String>(TOKEN, HttpStatus.CREATED);
     }
 }
