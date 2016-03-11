@@ -25,7 +25,7 @@ public class MongoConfig extends AbstractMongoConfiguration {
     private Integer port = 15508;
     private String username = "demoodra";
     private String database = "demo";
-    private String password = "demoodra";
+    private String password = "Admin2016";
 
     @Bean
     public GridFsTemplate gridFsTemplate() throws Exception {
