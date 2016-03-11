@@ -16,10 +16,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -32,21 +29,85 @@ public class FullFunctionsController {
 
     public static final String TOKEN = "123456789";
 
+
     @Autowired
-    private GreetingController greetingController;
+    private GridFsTemplate gridFsTemplate;
 
-    @RequestMapping(method = RequestMethod.POST, value = "/upload")
-    public ResponseEntity<String> handleFileUploads(HttpServletRequest request, @RequestParam("lat") String lat,
-                                                    @RequestParam("long") String lon,
-                                                    @RequestParam("key") MultipartFile file) {
+//    @RequestMapping(method = RequestMethod.POST, value = "/upload")
+//    public ResponseEntity<String> handleFileUploads(HttpServletRequest request, @RequestParam("lat") String lat,
+//                                                    @RequestParam("long") String lon,
+//                                                    @RequestParam("key") MultipartFile file) {
+//
+//        System.out.println(request.getHeader("Authorization"));
+//        System.out.println(request.getHeader("common"));
+//        System.out.println(lat);
+//        System.out.println(lon);
+//        String response = greetingController.handleFileUploads(lat, lon, file);
+//        return new ResponseEntity<String>(response, HttpStatus.CREATED);
+//    }
 
-        System.out.println(request.getHeader("Authorization"));
-        System.out.println(request.getHeader("common"));
+
+    @RequestMapping(value = "/upload", method = RequestMethod.POST)
+    public
+    @ResponseBody
+    String handleFileUpload(@RequestParam("lat") String lat,
+                            @RequestParam("long") String lon,
+            @RequestParam("key") MultipartFile file) {
         System.out.println(lat);
         System.out.println(lon);
-        String response = greetingController.handleFileUploads(lat, lon, file);
-        return new ResponseEntity<String>(response, HttpStatus.CREATED);
+        String name = "test11";
+        if (!file.isEmpty()) {
+            try {
+                byte[] bytes = file.getBytes();
+                BufferedOutputStream stream =
+                        new BufferedOutputStream(new FileOutputStream(new File(name + "-uploaded")));
+                stream.write(bytes);
+                stream.close();
+                System.out.println("You successfully uploaded " + name + " into " + name + "-uploaded !");
+                return "You successfully uploaded " + name + " into " + name + "-uploaded !";
+            } catch (Exception e) {
+                System.out.println("You failed to upload " + name + " => " + e.getMessage());
+                return "You failed to upload " + name + " => " + e.getMessage();
+            }
+        } else {
+            System.out.println("You failed to upload " + name + " because the file was empty.");
+            return "You failed to upload " + name + " because the file was empty.";
+        }
     }
+
+    @RequestMapping(method = RequestMethod.POST, value = "/uploadImage")
+    public
+    @ResponseBody
+    String handleFileUploads(@RequestParam("lat") String lat,
+                             @RequestParam("long") String lon,
+                             @RequestParam("key") MultipartFile file) {
+
+
+        System.out.println(lat);
+        System.out.println(lon);
+        System.out.println(file);
+        if (!file.isEmpty()) {
+            try {
+
+                DBObject metaData = new BasicDBObject();
+                metaData.put("coordinates-lat", lat);
+                metaData.put("coordinates-long", lon);
+
+
+                gridFsTemplate.store(file.getInputStream(), "image/jpeg", metaData);
+
+                System.out.println("OK");
+            } catch (Exception e) {
+                System.out.println(e.getMessage());
+            }
+        } else {
+            System.out.println("ERROR");
+        }
+
+        System.out.println(file);
+        return "redirect:upload";
+    }
+
 
     @RequestMapping(method = RequestMethod.POST, value = "/login")
     public ResponseEntity<String> login(@RequestBody User user) {
